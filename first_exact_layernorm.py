@@ -123,6 +123,7 @@ class Model(torch.nn.Module):
         super().__init__()
         
         self.word_embedding = torch.eye(3, 6)
+        self.word_embedding.requires_grad = True
         self.pos_encoding = PositionEncoding()
         self.transformer_encoder = MyTransformerEncoder()
         self.output_layer = torch.nn.Linear(12, 1)
@@ -147,6 +148,16 @@ for step in range(args.steps):
     w = torch.tensor([alphabet_index['$']] + [alphabet_index[str(random.randrange(2))] for i in range(n)])
     label = w[1] == alphabet_index['1']
     output = model(w)
+    output.backward()
+    for z, p in enumerate(model.parameters()):
+      print(p.size(), p.grad.abs().max(), z)
+    quit()
+    print(output)
+    print("Embedding", model.word_embedding.grad.abs().max())
+    print("something from a layer", model.transformer_encoder.layers[0].linear1.weight.grad.abs().max())
+    print("Output", model.output_layer.weight.grad.abs().max())
+    print("Output", model.output_layer.bias.grad.abs().max())
+    quit()
     if not label: output = -output
     if output > 0:
         correct += 1

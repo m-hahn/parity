@@ -213,7 +213,7 @@ for epoch in range(args.epochs):
             loss.backward()
             optim.step()
 
-    with torch.no_grad():
+    if True:
         # This is for plotting one cross-section of the loss surface
         #model.encoder.layers[0].self_attn.in_proj_weight[40][1] = val
 
@@ -225,6 +225,11 @@ for epoch in range(args.epochs):
             w = torch.tensor([random.randrange(2) for i in range(n)]+[2])
             label = len([a for a in w if a == 1]) % 2 == 1
             output = model(w)
+            output.backward()
+            for z, p in enumerate(model.parameters()):
+              print(p.size(), p.grad.abs().max(), z)
+            quit()
+
             if not label: output = -output
             if output > 0: test_correct += 1
             loss = -log_sigmoid(output)
